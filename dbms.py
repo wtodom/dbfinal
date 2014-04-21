@@ -2,11 +2,9 @@ import itertools
 
 from prettytable import PrettyTable
 
-a = [["A1", "A2"]]
-b = [["B1", "B2", "B3"]]
-c = [["C1", "C2", "C3", "C4"]]
-d = [["d1", "d2"]]
-e = [["e1", "e2"]]
+a = [["a1", "a2"]]
+b = [["b1", "b2", "b3"]]
+c = [["c1", "c2", "c3", "c4"]]
 
 def build_table(db_file):
 	with open(db_file, "r") as f:
@@ -14,6 +12,11 @@ def build_table(db_file):
 		for row in data:
 			row[-1] = row[-1].rstrip()
 		return data
+
+def select(columns, table):
+	key = [1 if column in columns else 0 for column in table[0]]
+	new_table = [list(itertools.compress(row, key)) for row in table[1]]
+	return [columns, new_table]
 
 def join(tables_to_join):
 	if 'a' in tables_to_join and 'b' in tables_to_join and 'c' in tables_to_join:
@@ -39,10 +42,36 @@ def join(tables_to_join):
 
 	return [columns, [[item for sublist in row for item in sublist] for row in res]]
 
-def select(columns, table):
-	key = [1 if column in columns else 0 for column in table[0]]  # correct
-	new_table = [list(itertools.compress(row, key)) for row in table[1]]
-	return [columns, new_table]
+def where(conditions, table):
+	pairs = []
+
+	for condition in conditions:
+		pairs.append([cond.strip(' \t\n\r') for cond in condition.split("=")])
+
+	new_table = []
+
+	for row in table[1]:
+		match = True
+		for pair in pairs:
+			if pair[0] in table[0] and pair[1] in table[0]:  # [col, col]
+				if row[table[0].index(pair[0])] != row[table[0].index(pair[1])]:
+					match = False
+					continue
+			elif pair[0] in table[0] and not pair[1] in table[0]:  # [col, val]
+				if row[table[0].index(pair[0])] != pair[1]:
+					match = False
+					continue
+			elif not pair[0] in table[0] and pair[1] in table[0]:  # [val, col]
+				if pair[0] != row[table[0].index(pair[1])]:
+					match = False
+					continue
+			else:  # wtf?
+				# print("neither")
+				pass
+		if match:
+			new_table.append(row)
+
+	return [table[0], new_table]
 
 def display(data):
 	table = PrettyTable(data[0])
@@ -82,19 +111,17 @@ def parse_query(query):
 a.append(build_table("A.txt"))
 b.append(build_table("B.txt"))
 c.append(build_table("C.txt"))
-d.append(build_table("d.txt"))
-e.append(build_table("e.txt"))
 
 def debug():
-	# display(a[0], a[1])
-	# display(b[0], b[1])
-	# display(c[0], c[1])
+	query = "SELECT A1, C2 FROM A, C WHERE A1=C4 and C1=145;"
+	query2 = "select a1, b1 from a, b where a1=b2 and b1=35;"
+	q = parse_query(query2)
 
-	# for row in join(['a', 'b', 'c'][1]):
-	# 	print(row)
-
-	# display(join(['b', 'c']))
-	# print(join(['b', 'c']))
-	display(select(["B1", "C2"], join(["b", "c"])))
+	# display(a)
+	# display(b)
+	# display(c)
+	display(where(q[2], join(q[1])))
+	print(query2)
+	display(select(q[0], where(q[2], join(q[1]))))
 
 debug()
