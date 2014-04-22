@@ -2,6 +2,7 @@ import itertools
 
 from prettytable import PrettyTable
 
+
 a = [["a1", "a2"]]
 b = [["b1", "b2", "b3"]]
 c = [["c1", "c2", "c3", "c4"]]
@@ -66,7 +67,6 @@ def where(conditions, table):
 					match = False
 					continue
 			else:  # wtf?
-				# print("neither")
 				pass
 		if match:
 			new_table.append(row)
@@ -79,6 +79,41 @@ def display(data):
 		table.add_row(row)
 	print(table)
 
+def select_terms(query):
+	terms = []
+	query = query.split("from")
+	query = query[0].split("select")[1]
+	if ',' in query:
+		for term in query.split(','):
+			terms.append(term.strip(' \t\n\r'))
+		return terms
+	else:
+		return [query.strip(' \t\n\r')]
+
+def from_terms(query):
+	terms = []
+	query = query.split("from")[1]
+	if "where" in query:
+		query = query.split("where")[0]
+	if ',' in query:
+		for term in query.split(','):
+			terms.append(term.strip(' \t\n\r'))
+		return terms
+	else:
+		return [query.strip(' \t\n\r')]
+
+def where_terms(query):
+	terms = []
+	if "where" not in query:
+		return []
+	query = query.split("where")[1]
+	if 'and' in query:
+		for term in query.split('and'):
+			terms.append(term.strip(' \t\n\r'))
+		return terms
+	else:
+		return [query.strip(' \t\n\r')]
+
 def parse_query(query):
 	"""
 	Returns a list of the form:
@@ -88,40 +123,21 @@ def parse_query(query):
 	"""
 	query = query.lower()[:-1]  # make parsing simpler
 
-	select_terms = []
-	from_terms = []
-	where_terms = []
-
-	# where
-	if "where" in query:
-		query = query.split("where")
-		for term in query[1].split("and"):
-			where_terms.append(term.strip(' \t\n\r'))
-	# from
-	query = query[0].split("from")
-	for term in query[1].split(","):
-		from_terms.append(term.strip(' \t\n\r'))
-	# select
-	query = query[0].split("select")
-	for term in query[1].split(","):
-		select_terms.append(term.strip(' \t\n\r'))
-
-	return [select_terms, from_terms, where_terms]
+	return [select_terms(query), from_terms(query), where_terms(query)]
 
 a.append(build_table("A.txt"))
 b.append(build_table("B.txt"))
 c.append(build_table("C.txt"))
 
-def debug():
-	query = "SELECT A1, C2 FROM A, C WHERE A1=C4 and C1=145;"
-	query2 = "select a1, b1 from a, b where a1=b2 and b1=35;"
-	q = parse_query(query2)
+def main():
+	query = None
+	while True:
+		query = input("wesql> ")
+		if query == "quit":
+			print("Bye")
+			return
+		q = parse_query(query)
+		display(select(q[0], where(q[2], join(q[1]))))
 
-	# display(a)
-	# display(b)
-	# display(c)
-	display(where(q[2], join(q[1])))
-	print(query2)
-	display(select(q[0], where(q[2], join(q[1]))))
-
-debug()
+main()
+# debug()
