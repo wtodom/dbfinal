@@ -155,8 +155,11 @@ def main():
 		while query[-1] != ';':
 			query += input("     > ")
 		q = parse_query(query)
-		result = select(q[1][0], where(q[1][2], join(q[1][1])))
-		final_result = reorder_columns(q[0][0], result)
+		if q[1][0] == ['*']:
+			final_result = where(q[1][2], join(q[1][1]))
+		else:
+			result = select(q[1][0], where(q[1][2], join(q[1][1])))
+			final_result = reorder_columns(q[0][0], result)
 		display(final_result)
 
 main()
