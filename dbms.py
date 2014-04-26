@@ -67,7 +67,7 @@ def where(conditions, table):
 					match = False
 					continue
 			else:  # wtf?
-				pass
+				raise SyntaxError("There was an error in your where clause - multiple primatives.")
 		if match:
 			new_table.append(row)
 
@@ -123,7 +123,23 @@ def parse_query(query):
 	"""
 	query = query.lower()[:-1]  # make parsing simpler
 
-	return [select_terms(query), from_terms(query), where_terms(query)]
+	s = select_terms(query)
+	f = from_terms(query)
+	w = where_terms(query)
+
+	# sort them to preserve select and from operations
+	# then unsort later
+	return [[s, f, w], [sorted(s), sorted(f), sorted(w)]]
+
+def reorder_columns(desired, table):
+	indexes = []
+	for column in desired:
+		indexes.append(table[0].index(column))
+
+	table[0] = [table[0][i] for i in indexes]
+	table[1] = [[row[i] for i in indexes] for row in table[1]]
+
+	return table
 
 a.append(build_table("A.txt"))
 b.append(build_table("B.txt"))
@@ -136,8 +152,11 @@ def main():
 		if query == "quit":
 			print("Bye")
 			return
+		while query[-1] != ';':
+			query += input("     > ")
 		q = parse_query(query)
-		display(select(q[0], where(q[2], join(q[1]))))
+		result = select(q[1][0], where(q[1][2], join(q[1][1])))
+		final_result = reorder_columns(q[0][0], result)
+		display(final_result)
 
 main()
-# debug()
