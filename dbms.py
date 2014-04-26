@@ -19,24 +19,24 @@ def select(columns, table):
 	new_table = [list(itertools.compress(row, key)) for row in table[1]]
 	return [columns, new_table]
 
-def join(tables_to_join):
-	if 'a' in tables_to_join and 'b' in tables_to_join and 'c' in tables_to_join:
+def join(tables):
+	if 'a' in tables and 'b' in tables and 'c' in tables:
 		columns = a[0] + b[0] + c[0]
 		res = itertools.product(a[1], b[1], c[1])
-	elif 'a' in tables_to_join and 'b' in tables_to_join:
+	elif 'a' in tables and 'b' in tables:
 		columns = a[0] + b[0]
 		res = itertools.product(a[1], b[1])
-	elif 'a' in tables_to_join and 'c' in tables_to_join:
+	elif 'a' in tables and 'c' in tables:
 		columns = a[0] + c[0]
 		res = itertools.product(a[1], c[1])
-	elif 'b' in tables_to_join and 'c' in tables_to_join:
+	elif 'b' in tables and 'c' in tables:
 		columns = b[0] + c[0]
 		res = itertools.product(b[1], c[1])
-	elif 'a' in tables_to_join:
+	elif 'a' in tables:
 		return a
-	elif 'b' in tables_to_join:
+	elif 'b' in tables:
 		return b
-	elif 'c' in tables_to_join:
+	elif 'c' in tables:
 		return c
 	else:
 		raise SyntaxError("There was an error in your from clause - tables not found.")
