@@ -15,7 +15,7 @@ def build_table(db_file):
 		return data
 
 def select(columns, table):
-	key = [1 if column in columns else 0 for column in table[0]]
+	key = [column in columns for column in table[0]]
 	new_table = [list(itertools.compress(row, key)) for row in table[1]]
 	return [columns, new_table]
 
@@ -80,37 +80,27 @@ def display(data):
 	print(table)
 
 def select_terms(query):
-	terms = []
-	query = query.split("from")
-	query = query[0].split("select")[1]
+	query = query.split("from")[0].split("select")[1]
 	if ',' in query:
-		for term in query.split(','):
-			terms.append(term.strip(' \t\n\r'))
-		return terms
+		return [term.strip(' \t\n\r') for term in query.split(',')]
 	else:
 		return [query.strip(' \t\n\r')]
 
 def from_terms(query):
-	terms = []
 	query = query.split("from")[1]
 	if "where" in query:
 		query = query.split("where")[0]
 	if ',' in query:
-		for term in query.split(','):
-			terms.append(term.strip(' \t\n\r'))
-		return terms
+		return [term.strip(' \t\n\r') for term in query.split(',')]
 	else:
 		return [query.strip(' \t\n\r')]
 
 def where_terms(query):
-	terms = []
 	if "where" not in query:
 		return []
 	query = query.split("where")[1]
 	if 'and' in query:
-		for term in query.split('and'):
-			terms.append(term.strip(' \t\n\r'))
-		return terms
+		return [term.strip(' \t\n\r') for term in query.split('and')]
 	else:
 		return [query.strip(' \t\n\r')]
 
